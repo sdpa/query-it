@@ -29,3 +29,16 @@ export interface AllDBConfigs {
 }
 
 export type DatabaseType = keyof AllDBConfigs;
+
+export interface IDatabaseHandler {
+  connect(config: any): Promise<{ success: boolean; message?: string }>;
+}
+
+export interface IPostgresHandler extends IDatabaseHandler {
+  runSQL(sql: string): Promise<any>;
+}
+
+export interface IDynamoHandler extends IDatabaseHandler {
+  listTables(): Promise<string[]>;
+  describeTable(tableName: string): Promise<any>;
+}

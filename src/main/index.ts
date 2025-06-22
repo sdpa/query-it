@@ -2,6 +2,13 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import * as dbHandlerFactory from '../backend/db/dbHandlerFactory'
+import { MetadataServiceFactory } from '../backend/services/metadata/MetadataServiceFactory'
+import { DatabaseType } from 'src/backend/db/types'
+
+let currentHandler: any = null
+let currentDbType: DatabaseType | null = null // Default to PostgreSQL
+let currentCredentials: any = null
 
 function createWindow(): void {
   // Create the browser window.
@@ -52,7 +59,33 @@ app.whenReady().then(() => {
   })
 
   // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  ipcMain.on('ping', () => console.log('pong'))  
+  ipcMain.handle('connect-to-database', async (_e, dbType, credentials) => {
+    try {
+      const handler = dbHandlerFactory.getHandler(dbType)
+      await handler.connect(credentials)
+
+      currentHandler = handler
+      currentDbType = dbType as DatabaseType
+      currentCredentials = credentials
+
+      return { success: true }
+    } catch (err) {
+      return { 
+        success: false, 
+        message: (err && typeof err === 'object' && 'message' in err) ? (err as any).message : 'Unknown error' 
+      }
+    }
+  })
+
+  ipcMain.handle('get-metadata', async () => {
+    if (!currentHandler) return { error: 'Not connected' }
+    const service = MetadataServiceFactory.create(currentDbType!, currentHandler)
+    const metadata = await service.getMetadata()
+    console.log('Metadata retrieved:', metadata)
+    return metadata
+  })
+
 
   createWindow()
 

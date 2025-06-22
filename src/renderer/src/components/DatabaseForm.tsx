@@ -76,11 +76,27 @@ export const DatabaseForm = () => {
     }));
   };
 
-  const handleConnect = () => {
+  // const handleConnect = async () => {
+  //   // In a real app, we would validate and store the connection details
+  //   console.log("Connecting with:", credentials);
+  //   localStorage.setItem("dbCredentials", JSON.stringify(credentials));
+  //   navigate("/query");
+  // };
+
+  const handleConnect = async () => {
     // In a real app, we would validate and store the connection details
-    console.log("Connecting with:", credentials);
-    localStorage.setItem("dbCredentials", JSON.stringify(credentials));
-    navigate("/query");
+    // console.log("Connecting with:", credentials);
+    // Call the connectDB function from the preload script
+    const result = await window.api.connectDB(dbType, credentials);
+    // console.log("Connection result:", result);
+    // Navigate to the query interface, passing the connection status
+    console.log('result: ', result);
+    if (!result.success) {
+      console.log("Connection failed:", result.message);
+    } else {
+      console.log("Connection successful. navigating to query interface.");
+      navigate("/query");
+    }
   };
   
   // Render individual form field based on type

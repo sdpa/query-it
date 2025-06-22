@@ -1,7 +1,6 @@
-import { IDatabaseHandler } from './IDatabaseHandler';
-import { PostgresHandler } from './handlers/postgresHandler';
-import { MongoHandler } from './handlers/mongoHandler';
-import { DynamoHandler } from './handlers/dynamoHandler';
+import { IDatabaseHandler } from './types';
+import { PostgresHandler } from './postgresHandler';
+import { DynamoHandler } from './dynamoHandler';
 import { DatabaseType } from './types';
 
 export function getHandler(type: DatabaseType): IDatabaseHandler {
@@ -9,8 +8,6 @@ export function getHandler(type: DatabaseType): IDatabaseHandler {
   switch (type) {
     case 'postgresql':
       return new PostgresHandler();
-    case 'mongodb':
-      return new MongoHandler();
     case 'dynamodb':
       return new DynamoHandler();
     default:
