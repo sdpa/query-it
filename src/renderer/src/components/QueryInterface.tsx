@@ -26,6 +26,7 @@ const QueryInterface: React.FC = () => {
   useEffect(() => {
     setIsMetadataLoading(true)
     window.api.getMetadata().then((metadata) => {
+      console.log('Metadata fetched:', metadata)
       setMetadata(metadata)
       setIsMetadataLoading(false)
     })

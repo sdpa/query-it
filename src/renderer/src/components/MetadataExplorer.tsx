@@ -9,12 +9,15 @@ import {
   FileText, // Icon for Views
   DatabaseZap, // Icon for Procedures
   AlertTriangle, // Icon for Triggers
-  Loader2 // Icon for Loading Spinner
+  Loader2, // Icon for Loading Spinner
+  KeyRound,
+  Link2,
+  ShieldCheck
 } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
 import { Button } from '@renderer/components/ui/button'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
-import { PostgresMetadata, PostgresProcedureInfo, PostgresTableInfo } from 'src/backend/services/metadata/types'
+import { PostgresConstraintInfo, PostgresMetadata, PostgresProcedureInfo, PostgresTableInfo } from 'src/backend/services/metadata/types'
 
 
 interface MetadataExplorerProps {
@@ -32,6 +35,7 @@ const groupDataBySchema = (
     tables: PostgresTableInfo[]
     views: PostgresTableInfo[]
     procedures: PostgresProcedureInfo[]
+    constraints: PostgresConstraintInfo[] // Optional if not used in this component
   }
 > => {
   const grouped: Record<
@@ -40,6 +44,7 @@ const groupDataBySchema = (
       tables: PostgresTableInfo[]
       views: PostgresTableInfo[]
       procedures: PostgresProcedureInfo[]
+      constraints: PostgresConstraintInfo[] // Optional if not used in this component
     }
   > = {}
 
@@ -49,23 +54,30 @@ const groupDataBySchema = (
 
   metadata.tables.forEach((table) => {
     if (!grouped[table.schema]) {
-      grouped[table.schema] = { tables: [], views: [], procedures: [] }
+      grouped[table.schema] = { tables: [], views: [], procedures: [], constraints: [] }
     }
     grouped[table.schema].tables.push(table)
   })
 
   metadata.views.forEach((view) => {
     if (!grouped[view.schema]) {
-      grouped[view.schema] = { tables: [], views: [], procedures: [] }
+      grouped[view.schema] = { tables: [], views: [], procedures: [], constraints: [] }
     }
     grouped[view.schema].views.push(view)
   })
 
   metadata.procedures.forEach((proc) => {
     if (!grouped[proc.schema]) {
-      grouped[proc.schema] = { tables: [], views: [], procedures: [] }
+      grouped[proc.schema] = { tables: [], views: [], procedures: [], constraints: [] }
     }
     grouped[proc.schema].procedures.push(proc)
+  })
+
+  metadata.constraints.forEach((constraint) => {
+    if (!grouped[constraint.table]) {
+      grouped[constraint.table] = { tables: [], views: [], procedures: [], constraints: [] }
+    }
+    grouped[constraint.table].constraints.push(constraint)
   })
 
   return grouped
@@ -129,6 +141,7 @@ export const MetadataExplorer = ({
 
   const groupedData = groupDataBySchema(metadata)
   const schemas = Object.keys(groupedData).sort()
+  console.log('Grouped Metadata:', groupedData)
 
   if (schemas.length === 0 && metadata.columns.length === 0) {
      return (
@@ -183,13 +196,12 @@ export const MetadataExplorer = ({
                     )}
                     {schemaData.tables.map((table) => {
                       const tableId = getItemId('table', schemaName, table.name)
-                      const tableColumns = metadata.columns.filter(
-                        // Ensure filtering also considers schema if column data could be ambiguous
-                        (col) => col.table === table.name // Assuming column.table is unique enough or context implies schema
-                      )
-                      const tableTriggers = metadata.triggers.filter(
-                        (trg) => trg.table === table.name // Same assumption for triggers
-                      )
+                      const columnsId = getItemId('columns', schemaName, table.name)
+                      const constraintsId = getItemId('constraints', schemaName, table.name)
+
+                      const tableColumns = metadata.columns.filter((col) => col.table === table.name)
+                      const tableTriggers = metadata.triggers.filter((trg) => trg.table === table.name)
+                      const tableConstraints = metadata.constraints?.filter((c) => c.table === table.name) || []
 
                       return (
                         <div key={tableId}>
@@ -210,20 +222,80 @@ export const MetadataExplorer = ({
                             <Table className="h-4 w-4 mr-1" />
                             <span>{table.name}</span>
                           </Button>
+
                           {expandedItems[tableId] && (
                             <div className="ml-6 mt-1 space-y-1">
-                              {tableColumns.map((column) => (
-                                <div
-                                  key={`${tableId}.${column.name}`}
-                                  className="flex items-center px-2 py-1 text-xs"
-                                >
-                                  <Columns className="h-3 w-3 mr-1 text-muted-foreground" />
-                                  <span>{column.name}</span>
-                                  <span className="ml-auto text-muted-foreground">
-                                    {column.dataType}
-                                  </span>
+                              {/* Columns Group */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className={cn(
+                                  'w-full justify-start px-2 text-xs',
+                                  expandedItems[columnsId] && 'bg-muted'
+                                )}
+                                onClick={() => toggleExpand(columnsId)}
+                              >
+                                {expandedItems[columnsId] ? (
+                                  <ChevronDown className="h-3 w-3 mr-1" />
+                                ) : (
+                                  <ChevronRight className="h-3 w-3 mr-1" />
+                                )}
+                                <Columns className="h-3 w-3 mr-1 text-muted-foreground" />
+                                Columns
+                              </Button>
+                              {expandedItems[columnsId] && (
+                                <div className="ml-4 space-y-1">
+                                  {tableColumns.map((column) => (
+                                    <div
+                                      key={`${tableId}.${column.name}`}
+                                      className="flex items-center px-2 py-1 text-xs"
+                                    >
+                                      <span>{column.name}</span>
+                                    </div>
+                                  ))}
                                 </div>
-                              ))}
+                              )}
+
+                              {/* Constraints Group */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className={cn(
+                                  'w-full justify-start px-2 text-xs',
+                                  expandedItems[constraintsId] && 'bg-muted'
+                                )}
+                                onClick={() => toggleExpand(constraintsId)}
+                              >
+                                {expandedItems[constraintsId] ? (
+                                  <ChevronDown className="h-3 w-3 mr-1" />
+                                ) : (
+                                  <ChevronRight className="h-3 w-3 mr-1" />
+                                )}
+                                <KeyRound className="h-3 w-3 mr-1 text-muted-foreground" />
+                                Constraints
+                              </Button>
+                              {expandedItems[constraintsId] && (
+                                <div className="ml-4 space-y-1">
+                                  {tableConstraints.map((constraint) => (
+                                    <div
+                                      key={`${tableId}.constraint.${constraint.name}`}
+                                      className="flex items-center px-2 py-1 text-xs"
+                                    >
+                                      {constraint.type === 'PRIMARY KEY' || constraint.type === 'UNIQUE' ? (
+                                        <KeyRound className="h-3 w-3 mr-1 text-blue-500" />
+                                      ) : constraint.type === 'FOREIGN KEY' ? (
+                                        <Link2 className="h-3 w-3 mr-1 text-green-500" />
+                                      ) : (
+                                        <ShieldCheck className="h-3 w-3 mr-1 text-yellow-500" />
+                                      )}
+                                      <span>{constraint.name}</span>
+                                      <span className="ml-auto text-muted-foreground">{constraint.type}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Triggers */}
                               {tableTriggers.map((trigger) => (
                                 <div
                                   key={`${tableId}.trigger.${trigger.name}`}
@@ -231,9 +303,7 @@ export const MetadataExplorer = ({
                                 >
                                   <AlertTriangle className="h-3 w-3 mr-1 text-orange-500" />
                                   <span>{trigger.name}</span>
-                                  <span className="ml-auto text-muted-foreground">
-                                    {trigger.event}
-                                  </span>
+                                  <span className="ml-auto text-muted-foreground">{trigger.event}</span>
                                 </div>
                               ))}
                             </div>
@@ -279,9 +349,6 @@ export const MetadataExplorer = ({
                                 >
                                   <Columns className="h-3 w-3 mr-1 text-muted-foreground" />
                                   <span>{column.name}</span>
-                                  <span className="ml-auto text-muted-foreground">
-                                    {column.dataType}
-                                  </span>
                                 </div>
                               ))}
                             </div>

@@ -20,10 +20,20 @@ export interface PostgresTriggerInfo {
   event: string;
 }
 
+export interface PostgresConstraintInfo {
+  name: string;
+  type: 'PRIMARY KEY' | 'FOREIGN KEY' | 'UNIQUE' | 'CHECK';
+  table: string;
+  column: string;
+  foreignTable?: string | null;
+  foreignColumn?: string | null;
+}
+
 export interface PostgresMetadata {
   tables: PostgresTableInfo[];
   views: PostgresTableInfo[];
   columns: PostgresColumnInfo[];
   procedures: PostgresProcedureInfo[];
   triggers: PostgresTriggerInfo[];
+  constraints: PostgresConstraintInfo[];
 }
