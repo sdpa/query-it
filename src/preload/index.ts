@@ -5,6 +5,9 @@ import { electronAPI } from '@electron-toolkit/preload'
 const api = {
   connectDB: (type: 'postgres' | 'mongodb' | 'mysql', config: any) => {
     return ipcRenderer.invoke('connect-to-database', type, config)
+  },
+  getMetadata: () => {
+    return ipcRenderer.invoke('get-metadata')
   }
 }
 

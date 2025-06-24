@@ -61,21 +61,16 @@ app.whenReady().then(() => {
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))  
   ipcMain.handle('connect-to-database', async (_e, dbType, credentials) => {
-    try {
-      const handler = dbHandlerFactory.getHandler(dbType)
-      await handler.connect(credentials)
+    const handler = dbHandlerFactory.getHandler(dbType)
+    const result = await handler.connect(credentials)
 
+    if (result.success) {
       currentHandler = handler
       currentDbType = dbType as DatabaseType
       currentCredentials = credentials
-
-      return { success: true }
-    } catch (err) {
-      return { 
-        success: false, 
-        message: (err && typeof err === 'object' && 'message' in err) ? (err as any).message : 'Unknown error' 
-      }
     }
+
+    return result
   })
 
   ipcMain.handle('get-metadata', async () => {
@@ -94,6 +89,11 @@ app.whenReady().then(() => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+
+  app.on('before-quit', async () => {
+    await currentHandler?.disconnect();
+  })
+
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common

@@ -1,4 +1,4 @@
-import { Client } from 'pg';
+import { Client } from 'pg'
 import { IPostgresHandler } from './types';
 
 export class PostgresHandler implements IPostgresHandler {
@@ -26,13 +26,17 @@ export class PostgresHandler implements IPostgresHandler {
   }
 
   async connect(config: any): Promise<{ success: boolean; message?: string }>  {
+  
+    if (this.client) {
+      return { success: true }; 
+    }
+    this.client = new Client(config);
     try {
-      const client = new Client(config);
-      await client.connect();
-      this.client = client;
+      await this.client.connect();
       return { success: true };
-    } catch (error) {
-      return { success: false, message: error instanceof Error ? error.message : 'Unknown error' };
+    } catch (error: any) {
+      this.client = null;
+      return { success: false, message: error.message };
     }
   }
 }

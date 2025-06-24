@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Database, LogOut } from 'lucide-react'
 import { Button } from '@renderer/components/ui/button'
 import {
@@ -6,12 +6,15 @@ import {
   ResizablePanel,
   ResizablePanelGroup
 } from '@renderer/components/ui/resizable'
-import SchemaExplorer from '@renderer/components/SchemaExplorer'
+import { MetadataExplorer } from '@renderer/components/MetadataExplorer'
 import QueryChat from '@renderer/components/QueryChat'
 import QueryResults from '@renderer/components/QueryResults'
+import { PostgresMetadata } from 'src/backend/services/metadata/types'
 
 const QueryInterface: React.FC = () => {
   const [sqlQuery, setSqlQuery] = useState('')
+  const [metadata, setMetadata] = useState<PostgresMetadata | null>(null)
+  const [isMetadataLoading, setIsMetadataLoading] = useState<boolean>(true)
 
   // Get database info from localStorage (in a real app, this would be handled more securely)
   const dbCredentials = JSON.parse(localStorage.getItem('dbCredentials') || '{}')
@@ -19,6 +22,14 @@ const QueryInterface: React.FC = () => {
   const handleQueryGenerated = (query: string): void => {
     setSqlQuery(query)
   }
+
+  useEffect(() => {
+    setIsMetadataLoading(true)
+    window.api.getMetadata().then((metadata) => {
+      setMetadata(metadata)
+      setIsMetadataLoading(false)
+    })
+  }, [])
 
   const handleDisconnect = (): void => {
     localStorage.removeItem('dbCredentials')
@@ -53,7 +64,7 @@ const QueryInterface: React.FC = () => {
       <main className="flex-1 overflow-hidden">
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={20} minSize={15} maxSize={30} className="bg-card">
-            <SchemaExplorer />
+            <MetadataExplorer isLoading={isMetadataLoading} metadata={metadata} />
           </ResizablePanel>
 
           <ResizableHandle withHandle />
