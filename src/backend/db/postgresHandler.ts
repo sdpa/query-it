@@ -21,7 +21,6 @@ export class PostgresHandler implements IPostgresHandler {
     if (this.client) {
       await this.client.end();
       this.client = null;
-      console.log('Disconnected from PostgreSQL');
     }
   }
 

@@ -4,7 +4,6 @@ import { DynamoHandler } from './dynamoHandler';
 import { DatabaseType } from './types';
 
 export function getHandler(type: DatabaseType): IDatabaseHandler {
-  console.log("Creating handler for type:", type);
   switch (type) {
     case 'postgresql':
       return new PostgresHandler();

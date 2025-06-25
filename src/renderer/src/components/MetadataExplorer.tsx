@@ -141,7 +141,6 @@ export const MetadataExplorer = ({
 
   const groupedData = groupDataBySchema(metadata)
   const schemas = Object.keys(groupedData).sort()
-  console.log('Grouped Metadata:', groupedData)
 
   if (schemas.length === 0 && metadata.columns.length === 0) {
      return (

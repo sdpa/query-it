@@ -38,8 +38,6 @@ export class PostgresMetadataService implements IMetadataService<PostgresMetadat
       `)
     ]);
 
-    console.log('Postgres metadata rows:', rows);
-
     return {
       tables: rows[0].map((r: any) => ({ name: r.table_name, schema: r.table_schema })),
       views: rows[1].map((r: any) => ({ name: r.table_name, schema: r.table_schema })),

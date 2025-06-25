@@ -10,8 +10,10 @@ import { MetadataExplorer } from '@renderer/components/MetadataExplorer'
 import QueryChat from '@renderer/components/QueryChat'
 import QueryResults from '@renderer/components/QueryResults'
 import { PostgresMetadata } from 'src/backend/services/metadata/types'
+import { useNavigate } from 'react-router-dom'
 
 const QueryInterface: React.FC = () => {
+  const navigate = useNavigate();
   const [sqlQuery, setSqlQuery] = useState('')
   const [metadata, setMetadata] = useState<PostgresMetadata | null>(null)
   const [isMetadataLoading, setIsMetadataLoading] = useState<boolean>(true)
@@ -26,14 +28,15 @@ const QueryInterface: React.FC = () => {
   useEffect(() => {
     setIsMetadataLoading(true)
     window.api.getMetadata().then((metadata) => {
-      console.log('Metadata fetched:', metadata)
       setMetadata(metadata)
       setIsMetadataLoading(false)
     })
   }, [])
 
-  const handleDisconnect = (): void => {
-    localStorage.removeItem('dbCredentials')
+  const handleDisconnect = async (): Promise<void> => {
+    // Clear credentials from localStorage
+    await window.api.disconnectDB()
+    navigate("/");
   }
 
   return (

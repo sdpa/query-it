@@ -69,15 +69,24 @@ app.whenReady().then(() => {
       currentDbType = dbType as DatabaseType
       currentCredentials = credentials
     }
-
     return result
+  })
+  ipcMain.handle('disconnect-from-database', async () => {
+    try {
+      await currentHandler.disconnect()
+      currentHandler = null
+      currentDbType = null
+      currentCredentials = null
+      return { success: true }
+    } catch (err) {
+      return { success: false, message: err instanceof Error ? err.message : 'Unknown error' }
+    }
   })
 
   ipcMain.handle('get-metadata', async () => {
     if (!currentHandler) return { error: 'Not connected' }
     const service = MetadataServiceFactory.create(currentDbType!, currentHandler)
     const metadata = await service.getMetadata()
-    console.log('Metadata retrieved:', metadata)
     return metadata
   })
 

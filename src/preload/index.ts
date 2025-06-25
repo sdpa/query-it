@@ -6,9 +6,8 @@ const api = {
   connectDB: (type: 'postgres' | 'mongodb' | 'mysql', config: any) => {
     return ipcRenderer.invoke('connect-to-database', type, config)
   },
-  getMetadata: () => {
-    return ipcRenderer.invoke('get-metadata')
-  }
+  getMetadata: () => ipcRenderer.invoke('get-metadata'),
+  disconnectDB: () => ipcRenderer.invoke('disconnect-from-database'),
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

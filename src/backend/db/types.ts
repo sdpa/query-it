@@ -32,6 +32,7 @@ export type DatabaseType = keyof AllDBConfigs;
 
 export interface IDatabaseHandler {
   connect(config: any): Promise<{ success: boolean; message?: string }>;
+  disconnect(): Promise<void>;
 }
 
 export interface IPostgresHandler extends IDatabaseHandler {

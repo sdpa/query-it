@@ -6,6 +6,7 @@ declare global {
     electron: ElectronAPI
     api: {
       connectDB: (dbConfig: any, credentials: any) => Promise<{ success: boolean; message: string; error?: string }>,
-      getMetadata: () => Promise<PostgresMetadata>}
+      disconnectDB: () => Promise<{ success: boolean; message?: string }>,
+      getMetadata: () => Promise<PostgresMetadata>},
     }
 }

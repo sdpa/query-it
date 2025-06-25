@@ -2,6 +2,13 @@ import { IDynamoHandler } from "./types";
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 
 export class DynamoHandler implements IDynamoHandler {
+  async disconnect(): Promise<void> {
+    if (this.client) {
+      // There is no explicit disconnect for DynamoDBClient, but we can clean up the reference.
+      this.client.destroy?.();
+      this.client = undefined;
+    }
+  }
 
   private client?: DynamoDBClient;
 
