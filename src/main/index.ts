@@ -5,8 +5,7 @@ import icon from '../../resources/icon.png?asset'
 import * as dbHandlerFactory from '../backend/db/dbHandlerFactory'
 import { MetadataServiceFactory } from '../backend/services/metadata/MetadataServiceFactory'
 import { DatabaseType } from 'src/backend/db/types'
-import { getOllamaResponse } from './ollamaService'
-import { updateMetadataFile } from './metadataFileService' // Import the new service function
+// import { updateMetadataFile } from './metadataFileService' // Import the new service function
 
 let currentHandler: any = null
 let currentDbType: DatabaseType | null = null // Default to PostgreSQL
@@ -92,32 +91,16 @@ app.whenReady().then(() => {
     return metadata
   })
 
-  ipcMain.handle('ollama-send-message', async (_event, prompt, model, chatHistory) => { // Removed dbMetadata
-    try {
-      // dbMetadata is no longer passed directly; ollamaService reads it from file.
-      const response = await getOllamaResponse(prompt, model, undefined, chatHistory)
-      return response
-    } catch (error) {
-      console.error('Error in ollama-send-message handler:', error)
-      // It's good practice to throw the error or return an error object
-      // so the renderer can handle it. For simplicity, rethrowing.
-      if (error instanceof Error) {
-        throw error
-      }
-      throw new Error('An unknown error occurred in Ollama IPC handler')
-    }
-  })
-
-  ipcMain.handle('update-metadata-file', async (_event, metadata) => {
-    try {
-      return await updateMetadataFile(metadata)
-    } catch (error) {
-      console.error('Error in update-metadata-file handler:', error)
-      const message = error instanceof Error ? error.message : 'An unknown error occurred'
-      // Ensure a consistent error object structure for the renderer
-      return { success: false, error: `IPC Error: ${message}` }
-    }
-  })
+  // ipcMain.handle('update-metadata-file', async (_event, metadata) => {
+  //   try {
+  //     return await updateMetadataFile(metadata)
+  //   } catch (error) {
+  //     console.error('Error in update-metadata-file handler:', error)
+  //     const message = error instanceof Error ? error.message : 'An unknown error occurred'
+  //     // Ensure a consistent error object structure for the renderer
+  //     return { success: false, error: `IPC Error: ${message}` }
+  //   }
+  // })
 
   createWindow()
 
