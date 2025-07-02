@@ -5,6 +5,7 @@ import icon from '../../resources/icon.png?asset'
 import * as dbHandlerFactory from '../backend/db/dbHandlerFactory'
 import { MetadataServiceFactory } from '../backend/services/metadata/MetadataServiceFactory'
 import { DatabaseType } from 'src/backend/db/types'
+// import { updateMetadataFile } from './metadataFileService' // Import the new service function
 
 let currentHandler: any = null
 let currentDbType: DatabaseType | null = null // Default to PostgreSQL
@@ -90,6 +91,16 @@ app.whenReady().then(() => {
     return metadata
   })
 
+  // ipcMain.handle('update-metadata-file', async (_event, metadata) => {
+  //   try {
+  //     return await updateMetadataFile(metadata)
+  //   } catch (error) {
+  //     console.error('Error in update-metadata-file handler:', error)
+  //     const message = error instanceof Error ? error.message : 'An unknown error occurred'
+  //     // Ensure a consistent error object structure for the renderer
+  //     return { success: false, error: `IPC Error: ${message}` }
+  //   }
+  // })
 
   createWindow()
 
