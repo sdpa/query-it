@@ -1,10 +1,19 @@
-// import { FileUtil } from 'src/backend/util/fileUtil';
-import { IMetadataService } from './IMetadataService';
+import { app } from 'electron';
 import { PostgresMetadata } from './types';
 import { IPostgresHandler } from 'src/backend/db/types';
+import path from 'path';
+import fs from 'fs/promises';
+import { BaseMetadataService } from './BaseMetadataService';
 
-export class PostgresMetadataService implements IMetadataService<PostgresMetadata> {
-  constructor(private dbHandler: IPostgresHandler) {}
+export class PostgresMetadataService extends BaseMetadataService<PostgresMetadata> {
+  constructor(private dbHandler: IPostgresHandler) {
+    super()
+  }
+  
+  protected getMetadataFilePath(): string {
+    const userDataPath = app.getPath('userData')
+    return path.join(userDataPath, 'postgres_metadata.json')
+  }
 
   async processMetadata(metadata: PostgresMetadata, writeToFile: boolean) : Promise<string> {
 
@@ -84,9 +93,10 @@ export class PostgresMetadataService implements IMetadataService<PostgresMetadat
 
     schemaString += `\n-- End of schema\n`;
 
-    // if (writeToFile) {
-    //   await FileUtil.write('schema/postgres_metadata.sql', schemaString);
-    // }
+    if (writeToFile) {
+      const filePath = this.getMetadataFilePath()
+      await fs.writeFile(filePath, schemaString, 'utf-8')
+    }
     return schemaString;
 
 }
