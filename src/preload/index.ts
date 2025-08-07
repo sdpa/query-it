@@ -12,8 +12,9 @@ const api = {
     provider: 'openai' | 'ollama' | 'openrouter',
     prompt: string,
     chatHistory: { role: 'user' | 'assistant'; content: string }[] = [],
-    modelName?: string
-  ) => ipcRenderer.invoke('llm-send-message', provider, prompt, chatHistory, modelName),
+    modelName?: string,
+    apiKey?: string
+  ) => ipcRenderer.invoke('llm-send-message', provider, prompt, chatHistory, modelName, apiKey),
   sendOllamaMessage: (
     prompt: string,
     model: string,

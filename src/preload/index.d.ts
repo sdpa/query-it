@@ -11,7 +11,8 @@ declare global {
         provider: 'openai' | 'ollama' | 'openrouter',
         prompt: string,
         chatHistory?: { role: 'user' | 'assistant'; content: string }[],
-        modelName?: string
+        modelName?: string,
+        apiKey?: string
       ) => Promise<{ success: boolean; response?: string; error?: string }>,
       getMetadata: () => Promise<PostgresMetadata>
       sendOllamaMessage: (

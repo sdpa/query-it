@@ -4,20 +4,8 @@ import { cn } from '@renderer/lib/utils'
 import { Button } from '@renderer/components/ui/button'
 import { Textarea } from '@renderer/components/ui/textarea'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@renderer/components/ui/select'
+import { Settings } from './Settings'
 import { LlmProvider } from 'src/backend/services/llm/langchainService'
-
-const openRouterModels = [
-  'google/gemma-7b-it',
-  'mistralai/mistral-7b-instruct',
-  'anthropic/claude-3-haiku'
-]
 
 interface Message {
   id: string
@@ -41,8 +29,15 @@ export const QueryChat = ({ onQueryGenerated }: QueryChatProps) => {
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [llmProvider] = useState<LlmProvider>('openrouter')
-  const [modelName, setModelName] = useState<string>('google/gemma-7b-it')
+  const [settings, setSettings] = useState<{
+    provider: LlmProvider
+    apiKey: string
+    model: string
+  }>({
+    provider: 'openrouter',
+    apiKey: '',
+    model: 'google/gemma-7b-it'
+  })
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Generate a simple unique ID
@@ -69,7 +64,13 @@ export const QueryChat = ({ onQueryGenerated }: QueryChatProps) => {
 
     try {
       const chatHistory = messages.map((m) => ({ role: m.role, content: m.content }))
-      const result = await window.api.sendLlmMessage(llmProvider, input, chatHistory, modelName)
+      const result = await window.api.sendLlmMessage(
+        settings.provider,
+        input,
+        chatHistory,
+        settings.model,
+        settings.apiKey
+      )
 
       let response = ''
       if (result.success) {
@@ -120,18 +121,7 @@ export const QueryChat = ({ onQueryGenerated }: QueryChatProps) => {
             Describe the data you want to query in natural language
           </p>
         </div>
-        <Select value={modelName} onValueChange={(value) => setModelName(value)}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select Model" />
-          </SelectTrigger>
-          <SelectContent>
-            {openRouterModels.map((model) => (
-              <SelectItem key={model} value={model}>
-                {model}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Settings onSave={setSettings} />
       </div>
 
       <ScrollArea className="flex-1 p-4">

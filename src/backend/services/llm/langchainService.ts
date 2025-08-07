@@ -13,15 +13,17 @@ export const sendMessage = async (
   provider: LlmProvider,
   prompt: string,
   history: LlmMessage[] = [],
-  modelName?: string
+  modelName?: string,
+  apiKey?: string
 ): Promise<string> => {
   let chat
   if (provider === 'openai') {
-    if (!process.env.OPENAI_API_KEY) {
+    const key = apiKey || process.env.OPENAI_API_KEY
+    if (!key) {
       throw new Error('OpenAI API key is not configured.')
     }
     chat = new ChatOpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: key,
       modelName: 'gpt-3.5-turbo'
     })
   } else if (provider === 'ollama') {
@@ -33,13 +35,14 @@ export const sendMessage = async (
       model: 'llama2'
     })
   } else if (provider === 'openrouter') {
-    if (!process.env.OPENROUTER_API_KEY) {
+    const key = apiKey || process.env.OPENROUTER_API_KEY
+    if (!key) {
       throw new Error('OpenRouter API key is not configured.')
     }
     chat = new ChatOpenAI({
-      apiKey: process.env.OPENROUTER_API_KEY,
+      apiKey: key,
       configuration: {
-        baseURL: 'https://openrouter.ai/api/v1',
+        baseURL: 'https://openrouter.ai/api/v1'
       },
       modelName: modelName || 'google/gemma-7b-it'
     })
