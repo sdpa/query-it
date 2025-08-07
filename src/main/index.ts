@@ -89,9 +89,9 @@ app.whenReady().then(() => {
     return metadata
   })
 
-  ipcMain.handle('llm-send-message', async (_event, provider, prompt, history) => {
+  ipcMain.handle('llm-send-message', async (_event, provider, prompt, history, modelName) => {
     try {
-      const response = await sendMessage(provider, prompt, history)
+      const response = await sendMessage(provider, prompt, history, modelName)
       return { success: true, response }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'An unknown error occurred'

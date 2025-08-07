@@ -13,6 +13,12 @@ import {
 } from '@renderer/components/ui/select'
 import { LlmProvider } from 'src/backend/services/llm/langchainService'
 
+const openRouterModels = [
+  'google/gemma-7b-it',
+  'mistralai/mistral-7b-instruct',
+  'anthropic/claude-3-haiku'
+]
+
 interface Message {
   id: string
   content: string
@@ -35,7 +41,8 @@ export const QueryChat = ({ onQueryGenerated }: QueryChatProps) => {
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [llmProvider, setLlmProvider] = useState<LlmProvider>('openai')
+  const [llmProvider] = useState<LlmProvider>('openrouter')
+  const [modelName, setModelName] = useState<string>('google/gemma-7b-it')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Generate a simple unique ID
@@ -62,7 +69,7 @@ export const QueryChat = ({ onQueryGenerated }: QueryChatProps) => {
 
     try {
       const chatHistory = messages.map((m) => ({ role: m.role, content: m.content }))
-      const result = await window.api.sendLlmMessage(llmProvider, input, chatHistory)
+      const result = await window.api.sendLlmMessage(llmProvider, input, chatHistory, modelName)
 
       let response = ''
       if (result.success) {
@@ -113,13 +120,16 @@ export const QueryChat = ({ onQueryGenerated }: QueryChatProps) => {
             Describe the data you want to query in natural language
           </p>
         </div>
-        <Select value={llmProvider} onValueChange={(value) => setLlmProvider(value as LlmProvider)}>
-          <SelectTrigger className="w-[120px]">
-            <SelectValue placeholder="Select LLM" />
+        <Select value={modelName} onValueChange={(value) => setModelName(value)}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select Model" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="openai">OpenAI</SelectItem>
-            <SelectItem value="ollama">Ollama</SelectItem>
+            {openRouterModels.map((model) => (
+              <SelectItem key={model} value={model}>
+                {model}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

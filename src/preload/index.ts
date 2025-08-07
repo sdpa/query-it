@@ -9,10 +9,11 @@ const api = {
   getMetadata: () => ipcRenderer.invoke('get-metadata'),
   disconnectDB: () => ipcRenderer.invoke('disconnect-from-database'),
   sendLlmMessage: (
-    provider: 'openai' | 'ollama',
+    provider: 'openai' | 'ollama' | 'openrouter',
     prompt: string,
-    chatHistory: { role: 'user' | 'assistant'; content: string }[] = []
-  ) => ipcRenderer.invoke('llm-send-message', provider, prompt, chatHistory),
+    chatHistory: { role: 'user' | 'assistant'; content: string }[] = [],
+    modelName?: string
+  ) => ipcRenderer.invoke('llm-send-message', provider, prompt, chatHistory, modelName),
   sendOllamaMessage: (
     prompt: string,
     model: string,
