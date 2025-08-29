@@ -18,7 +18,7 @@ interface QueryChatProps {
   onQueryGenerated: (query: string) => void
 }
 
-export const QueryChat = ({ onQueryGenerated }: QueryChatProps) => {
+export const QueryChat: React.FC<QueryChatProps> = ({ onQueryGenerated }: QueryChatProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -105,7 +105,7 @@ export const QueryChat = ({ onQueryGenerated }: QueryChatProps) => {
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent): void => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSendMessage()
