@@ -1,15 +1,15 @@
 // import { Button } from '@renderer/components/ui/button'
 import QueryInterface from './components/QueryInterface'
-import Index from "./components/Index"
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Index from './components/Index'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 const RequireConnection = ({ children }: { children: React.ReactNode }) => {
-  const hasConnection = localStorage.getItem("dbCredentials");
+  const hasConnection = localStorage.getItem('dbCredentials')
   if (!hasConnection) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/" replace />
   }
-  return <>{children}</>;
-};
+  return <>{children}</>
+}
 
 function App(): React.JSX.Element {
   return (

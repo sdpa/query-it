@@ -21,8 +21,9 @@ const api = {
     chatHistory: { role: 'user' | 'assistant'; content: string }[] = []
     // Removed dbMetadata parameter from here
   ) => ipcRenderer.invoke('ollama-send-message', prompt, model, chatHistory),
-  updateMetadataFileOnDesktop: (metadata: any) => // Using 'any' for now, will be typed by PostgresMetadata in .d.ts
-    ipcRenderer.invoke('update-metadata-file', metadata)
+  updateMetadataFileOnDesktop: (
+    metadata: any // Using 'any' for now, will be typed by PostgresMetadata in .d.ts
+  ) => ipcRenderer.invoke('update-metadata-file', metadata)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

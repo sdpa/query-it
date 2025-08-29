@@ -1,106 +1,102 @@
-import { app } from 'electron';
-import { PostgresMetadata } from './types';
-import { IPostgresHandler } from 'src/backend/db/types';
-import path from 'path';
-import fs from 'fs/promises';
-import { BaseMetadataService } from './BaseMetadataService';
+import { app } from 'electron'
+import { PostgresMetadata } from './types'
+import { IPostgresHandler } from 'src/backend/db/types'
+import path from 'path'
+import fs from 'fs/promises'
+import { BaseMetadataService } from './BaseMetadataService'
 
 export class PostgresMetadataService extends BaseMetadataService<PostgresMetadata> {
   constructor(private dbHandler: IPostgresHandler) {
     super()
   }
-  
+
   protected getMetadataFilePath(): string {
     const userDataPath = app.getPath('userData')
     return path.join(userDataPath, 'postgres_metadata.json')
   }
 
-  async processMetadata(metadata: PostgresMetadata, writeToFile: boolean) : Promise<string> {
-
+  async processMetadata(metadata: PostgresMetadata, writeToFile: boolean): Promise<string> {
     if (!metadata) {
-      return 'No database schema information available. Connect to a database and refresh schema via the app.';
+      return 'No database schema information available. Connect to a database and refresh schema via the app.'
     }
 
-    let schemaString = '--\n-- PostgreSQL schema dump \n--\n\n';
+    let schemaString = '--\n-- PostgreSQL schema dump \n--\n\n'
 
-    const allTablesAndViews = [...(metadata.tables || []), ...(metadata.views || [])];
+    const allTablesAndViews = [...(metadata.tables || []), ...(metadata.views || [])]
 
     allTablesAndViews.forEach((table) => {
-      const isView = metadata.views?.some(v => v.name === table.name && v.schema === table.schema);
+      const isView = metadata.views?.some((v) => v.name === table.name && v.schema === table.schema)
 
       if (isView) {
-        schemaString += `--\n-- Name: ${table.name}; Type: VIEW; Schema: ${table.schema}\n--\n`;
-        schemaString += `CREATE VIEW ${table.schema}.${table.name} AS\n  -- View definition unknown\n;\n\n`;
-        return;
+        schemaString += `--\n-- Name: ${table.name}; Type: VIEW; Schema: ${table.schema}\n--\n`
+        schemaString += `CREATE VIEW ${table.schema}.${table.name} AS\n  -- View definition unknown\n;\n\n`
+        return
       }
 
-      const tableColumns = metadata.columns?.filter(col => col.table === table.name) || [];
-      schemaString += `--\n-- Name: ${table.name}; Type: TABLE; Schema: ${table.schema}\n--\n`;
-      schemaString += `CREATE TABLE ${table.schema}.${table.name} (\n`;
+      const tableColumns = metadata.columns?.filter((col) => col.table === table.name) || []
+      schemaString += `--\n-- Name: ${table.name}; Type: TABLE; Schema: ${table.schema}\n--\n`
+      schemaString += `CREATE TABLE ${table.schema}.${table.name} (\n`
 
-      const columnLines: string[] = [];
+      const columnLines: string[] = []
 
       tableColumns.forEach((col) => {
-        let line = `  ${col.name} ${col.dataType}`;
+        let line = `  ${col.name} ${col.dataType}`
 
         const pk = metadata.constraints?.find(
-          c => c.table === table.name && c.column === col.name && c.type === 'PRIMARY KEY'
-        );
-        if (pk) line += ' PRIMARY KEY';
+          (c) => c.table === table.name && c.column === col.name && c.type === 'PRIMARY KEY'
+        )
+        if (pk) line += ' PRIMARY KEY'
 
         const unique = metadata.constraints?.find(
-          c => c.table === table.name && c.column === col.name && c.type === 'UNIQUE'
-        );
-        if (unique) line += ' UNIQUE';
+          (c) => c.table === table.name && c.column === col.name && c.type === 'UNIQUE'
+        )
+        if (unique) line += ' UNIQUE'
 
         // CHECK constraints aren't applied per column by default, so skipped here
-        columnLines.push(line);
-      });
+        columnLines.push(line)
+      })
 
-      schemaString += columnLines.join(',\n') + '\n);\n\n';
+      schemaString += columnLines.join(',\n') + '\n);\n\n'
 
       // Add CHECK constraints (not tied to column directly)
-      const checkConstraints = metadata.constraints?.filter(
-        c => c.table === table.name && c.type === 'CHECK'
-      ) || [];
+      const checkConstraints =
+        metadata.constraints?.filter((c) => c.table === table.name && c.type === 'CHECK') || []
       checkConstraints.forEach((check) => {
-        schemaString += `ALTER TABLE ${table.schema}.${table.name} ADD CONSTRAINT ${check.name} CHECK (...);\n`; // definition unknown
-      });
+        schemaString += `ALTER TABLE ${table.schema}.${table.name} ADD CONSTRAINT ${check.name} CHECK (...);\n` // definition unknown
+      })
 
       // Add foreign key constraints
-      const fkConstraints = metadata.constraints?.filter(
-        c => c.table === table.name && c.type === 'FOREIGN KEY'
-      ) || [];
+      const fkConstraints =
+        metadata.constraints?.filter((c) => c.table === table.name && c.type === 'FOREIGN KEY') ||
+        []
       fkConstraints.forEach((fk) => {
-        schemaString += `ALTER TABLE ${table.schema}.${table.name} ADD CONSTRAINT ${fk.name} FOREIGN KEY (${fk.column}) REFERENCES ${fk.foreignTable}(${fk.foreignColumn});\n`;
-      });
+        schemaString += `ALTER TABLE ${table.schema}.${table.name} ADD CONSTRAINT ${fk.name} FOREIGN KEY (${fk.column}) REFERENCES ${fk.foreignTable}(${fk.foreignColumn});\n`
+      })
 
       // Add triggers
-      const triggers = metadata.triggers?.filter(t => t.table === table.name) || [];
+      const triggers = metadata.triggers?.filter((t) => t.table === table.name) || []
       triggers.forEach((trigger) => {
-        schemaString += `-- Trigger: ${trigger.name} on ${table.schema}.${table.name}\n`;
-        schemaString += `CREATE TRIGGER ${trigger.name} -- Event: ${trigger.event} (definition not available)\n\n`;
-      });
-    });
+        schemaString += `-- Trigger: ${trigger.name} on ${table.schema}.${table.name}\n`
+        schemaString += `CREATE TRIGGER ${trigger.name} -- Event: ${trigger.event} (definition not available)\n\n`
+      })
+    })
 
     // Stored Procedures
     if (metadata.procedures?.length > 0) {
-      schemaString += `--\n-- Stored Procedures\n--\n`;
+      schemaString += `--\n-- Stored Procedures\n--\n`
       metadata.procedures.forEach((proc) => {
-        schemaString += `CREATE PROCEDURE ${proc.schema}.${proc.name}() -- definition not available;\n`;
-      });
+        schemaString += `CREATE PROCEDURE ${proc.schema}.${proc.name}() -- definition not available;\n`
+      })
     }
 
-    schemaString += `\n-- End of schema\n`;
+    schemaString += `\n-- End of schema\n`
 
     if (writeToFile) {
       const filePath = this.getMetadataFilePath()
       await fs.writeFile(filePath, schemaString, 'utf-8')
     }
-    return schemaString;
-
-}
-
+    return schemaString
+  }
 
   async getMetadata(): Promise<PostgresMetadata> {
     const rows = await Promise.all([
@@ -168,7 +164,7 @@ export class PostgresMetadataService extends BaseMetadataService<PostgresMetadat
             )
           )
       `)
-    ]);
+    ])
 
     const res: PostgresMetadata = {
       tables: rows[0].map((r: any) => ({
@@ -216,11 +212,11 @@ export class PostgresMetadataService extends BaseMetadataService<PostgresMetadat
         foreignTable: r.foreign_table_name || null,
         foreignColumn: r.foreign_column_name || null
       }))
-    };
+    }
 
-    console.log("raw metadata: ", res);
-    const formatted =  await this.processMetadata(res, false);
-    console.log("formatted metadata: ", formatted);
-    return res;
+    console.log('raw metadata: ', res)
+    const formatted = await this.processMetadata(res, false)
+    console.log('formatted metadata: ', formatted)
+    return res
   }
 }

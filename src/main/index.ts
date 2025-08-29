@@ -25,7 +25,7 @@ function createWindow(): void {
     }
   })
 
-  mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools()
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -60,7 +60,7 @@ app.whenReady().then(() => {
   })
 
   // IPC test
-  ipcMain.on('ping', () => console.log('pong'))  
+  ipcMain.on('ping', () => console.log('pong'))
   ipcMain.handle('connect-to-database', async (_e, dbType, credentials) => {
     const handler = dbHandlerFactory.getHandler(dbType)
     const result = await handler.connect(credentials)
@@ -89,15 +89,18 @@ app.whenReady().then(() => {
     return metadata
   })
 
-  ipcMain.handle('llm-send-message', async (_event, provider, prompt, history, modelName, apiKey) => {
-    try {
-      const response = await sendMessage(provider, prompt, history, modelName, apiKey)
-      return { success: true, response }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'An unknown error occurred'
-      return { success: false, error: message }
+  ipcMain.handle(
+    'llm-send-message',
+    async (_event, provider, prompt, history, modelName, apiKey) => {
+      try {
+        const response = await sendMessage(provider, prompt, history, modelName, apiKey)
+        return { success: true, response }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'An unknown error occurred'
+        return { success: false, error: message }
+      }
     }
-  })
+  )
 
   // ipcMain.handle('update-metadata-file', async (_event, metadata) => {
   //   try {
@@ -119,9 +122,8 @@ app.whenReady().then(() => {
   })
 
   app.on('before-quit', async () => {
-    await currentHandler?.disconnect();
+    await currentHandler?.disconnect()
   })
-
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common

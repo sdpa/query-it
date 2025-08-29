@@ -1,5 +1,5 @@
-import { Card, CardContent } from "@renderer/components/ui/card";
-import DatabaseForm from "@renderer/components/DatabaseForm";
+import { Card, CardContent } from '@renderer/components/ui/card'
+import DatabaseForm from '@renderer/components/DatabaseForm'
 
 const Index = () => {
   return (
@@ -12,9 +12,7 @@ const Index = () => {
             </div>
             <h1 className="text-xl font-bold">query.it</h1>
           </div>
-          <div className="ml-auto text-sm text-muted-foreground">
-            Database Query Playground
-          </div>
+          <div className="ml-auto text-sm text-muted-foreground">Database Query Playground</div>
         </div>
       </header>
 
@@ -34,7 +32,7 @@ const Index = () => {
                   <DatabaseForm />
                 </div>
               </div>
-              
+
               <div className="bg-gradient-to-br from-primary/80 to-accent/90 text-white rounded-r-lg p-8 flex flex-col justify-center">
                 <h3 className="text-2xl font-semibold mb-4">Database Query Playground</h3>
                 <ul className="space-y-4">
@@ -97,7 +95,7 @@ const Index = () => {
         </div>
       </footer>
     </div>
-  );
-};
+  )
+}
 
-export default Index;
+export default Index

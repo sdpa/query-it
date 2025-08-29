@@ -13,7 +13,7 @@ import { PostgresMetadata } from 'src/backend/services/metadata/types'
 import { useNavigate } from 'react-router-dom'
 
 const QueryInterface: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   const [sqlQuery, setSqlQuery] = useState('')
   const [metadata, setMetadata] = useState<PostgresMetadata | null>(null)
   const [isMetadataLoading, setIsMetadataLoading] = useState<boolean>(true)
@@ -36,7 +36,7 @@ const QueryInterface: React.FC = () => {
   const handleDisconnect = async (): Promise<void> => {
     // Clear credentials from localStorage
     await window.api.disconnectDB()
-    navigate("/");
+    navigate('/')
   }
 
   return (

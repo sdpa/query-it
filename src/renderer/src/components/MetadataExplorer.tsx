@@ -17,8 +17,12 @@ import {
 import { cn } from '@renderer/lib/utils'
 import { Button } from '@renderer/components/ui/button'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
-import { PostgresConstraintInfo, PostgresMetadata, PostgresProcedureInfo, PostgresTableInfo } from 'src/backend/services/metadata/types'
-
+import {
+  PostgresConstraintInfo,
+  PostgresMetadata,
+  PostgresProcedureInfo,
+  PostgresTableInfo
+} from 'src/backend/services/metadata/types'
 
 interface MetadataExplorerProps {
   isLoading: boolean
@@ -143,14 +147,13 @@ export const MetadataExplorer = ({
   const schemas = Object.keys(groupedData).sort()
 
   if (schemas.length === 0 && metadata.columns.length === 0) {
-     return (
+    return (
       <div className="h-full border-r bg-card p-2 flex flex-col items-center justify-center">
         <Database className="h-8 w-8 text-muted-foreground mb-2" />
         <p className="text-sm text-muted-foreground">Metadata is empty.</p>
       </div>
     )
   }
-
 
   return (
     <div className="h-full border-r bg-card p-2">
@@ -159,13 +162,19 @@ export const MetadataExplorer = ({
         <h3 className="font-semibold">Metadata Explorer</h3>
       </div>
 
-      <ScrollArea className="h-[calc(100vh-10rem)]"> {/* Adjust height as needed */}
+      <ScrollArea className="h-[calc(100vh-10rem)]">
+        {' '}
+        {/* Adjust height as needed */}
         <div className="space-y-1">
           {schemas.map((schemaName) => {
             const schemaData = groupedData[schemaName]
             // Skip rendering schema if it has no tables, views, or procedures
-            if (schemaData.tables.length === 0 && schemaData.views.length === 0 && schemaData.procedures.length === 0) {
-              return null;
+            if (
+              schemaData.tables.length === 0 &&
+              schemaData.views.length === 0 &&
+              schemaData.procedures.length === 0
+            ) {
+              return null
             }
 
             return (
@@ -198,9 +207,14 @@ export const MetadataExplorer = ({
                       const columnsId = getItemId('columns', schemaName, table.name)
                       const constraintsId = getItemId('constraints', schemaName, table.name)
 
-                      const tableColumns = metadata.columns.filter((col) => col.table === table.name)
-                      const tableTriggers = metadata.triggers.filter((trg) => trg.table === table.name)
-                      const tableConstraints = metadata.constraints?.filter((c) => c.table === table.name) || []
+                      const tableColumns = metadata.columns.filter(
+                        (col) => col.table === table.name
+                      )
+                      const tableTriggers = metadata.triggers.filter(
+                        (trg) => trg.table === table.name
+                      )
+                      const tableConstraints =
+                        metadata.constraints?.filter((c) => c.table === table.name) || []
 
                       return (
                         <div key={tableId}>
@@ -280,7 +294,8 @@ export const MetadataExplorer = ({
                                       key={`${tableId}.constraint.${constraint.name}`}
                                       className="flex items-center px-2 py-1 text-xs"
                                     >
-                                      {constraint.type === 'PRIMARY KEY' || constraint.type === 'UNIQUE' ? (
+                                      {constraint.type === 'PRIMARY KEY' ||
+                                      constraint.type === 'UNIQUE' ? (
                                         <KeyRound className="h-3 w-3 mr-1 text-blue-500" />
                                       ) : constraint.type === 'FOREIGN KEY' ? (
                                         <Link2 className="h-3 w-3 mr-1 text-green-500" />
@@ -288,7 +303,9 @@ export const MetadataExplorer = ({
                                         <ShieldCheck className="h-3 w-3 mr-1 text-yellow-500" />
                                       )}
                                       <span>{constraint.name}</span>
-                                      <span className="ml-auto text-muted-foreground">{constraint.type}</span>
+                                      <span className="ml-auto text-muted-foreground">
+                                        {constraint.type}
+                                      </span>
                                     </div>
                                   ))}
                                 </div>
@@ -302,7 +319,9 @@ export const MetadataExplorer = ({
                                 >
                                   <AlertTriangle className="h-3 w-3 mr-1 text-orange-500" />
                                   <span>{trigger.name}</span>
-                                  <span className="ml-auto text-muted-foreground">{trigger.event}</span>
+                                  <span className="ml-auto text-muted-foreground">
+                                    {trigger.event}
+                                  </span>
                                 </div>
                               ))}
                             </div>
@@ -358,9 +377,7 @@ export const MetadataExplorer = ({
 
                     {/* Procedures Section */}
                     {schemaData.procedures.length > 0 && (
-                      <div className="text-xs text-muted-foreground pl-2 pb-1 pt-2">
-                        PROCEDURES
-                      </div>
+                      <div className="text-xs text-muted-foreground pl-2 pb-1 pt-2">PROCEDURES</div>
                     )}
                     {schemaData.procedures.map((proc) => {
                       const procId = getItemId('procedure', schemaName, proc.name)
