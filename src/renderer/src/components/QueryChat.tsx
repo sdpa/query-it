@@ -4,6 +4,8 @@ import { cn } from '@renderer/lib/utils'
 import { Button } from '@renderer/components/ui/button'
 import { Textarea } from '@renderer/components/ui/textarea'
 import { ScrollArea } from '@renderer/components/ui/scroll-area'
+import { Settings } from './Settings'
+import { LlmProvider } from 'src/backend/services/llm/langchainService'
 
 interface Message {
   id: string
@@ -16,7 +18,7 @@ interface QueryChatProps {
   onQueryGenerated: (query: string) => void
 }
 
-export const QueryChat = ({ onQueryGenerated }: QueryChatProps) => {
+export const QueryChat: React.FC<QueryChatProps> = ({ onQueryGenerated }: QueryChatProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -27,6 +29,15 @@ export const QueryChat = ({ onQueryGenerated }: QueryChatProps) => {
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [settings, setSettings] = useState<{
+    provider: LlmProvider
+    apiKey: string
+    model: string
+  }>({
+    provider: 'openrouter',
+    apiKey: '',
+    model: 'google/gemma-7b-it'
+  })
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Generate a simple unique ID
@@ -51,26 +62,21 @@ export const QueryChat = ({ onQueryGenerated }: QueryChatProps) => {
     setInput('')
     setIsLoading(true)
 
-    // In a real app, this would be an API call to a language model
-    // For now, we'll simulate a response with some sample queries
-    setTimeout(() => {
-      let response = ''
+    try {
+      const chatHistory = messages.map((m) => ({ role: m.role, content: m.content }))
+      const result = await window.api.sendLlmMessage(
+        settings.provider,
+        input,
+        chatHistory,
+        settings.model,
+        settings.apiKey
+      )
 
-      if (input.toLowerCase().includes('users') && input.toLowerCase().includes('email')) {
-        response =
-          "Here's a query to get all users with their email addresses:\n\n```sql\nSELECT id, name, email FROM public.users;\n```"
-      } else if (input.toLowerCase().includes('product') && input.toLowerCase().includes('price')) {
-        response =
-          "Here's a query to get all products sorted by price:\n\n```sql\nSELECT id, name, price, category FROM public.products\nORDER BY price DESC;\n```"
-      } else if (
-        input.toLowerCase().includes('join') ||
-        (input.toLowerCase().includes('order') && input.toLowerCase().includes('user'))
-      ) {
-        response =
-          "Here's a query to join orders with users:\n\n```sql\nSELECT o.id, u.name, o.total, o.status\nFROM public.orders o\nJOIN public.users u ON o.user_id = u.id\nORDER BY o.created_at DESC;\n```"
+      let response = ''
+      if (result.success) {
+        response = result.response ?? ''
       } else {
-        response =
-          "I'll help you write a SQL query for that. Could you provide more details about the tables and fields you want to query?"
+        response = `Error: ${result.error}`
       }
 
       const assistantMessage: Message = {
@@ -81,17 +87,25 @@ export const QueryChat = ({ onQueryGenerated }: QueryChatProps) => {
       }
 
       setMessages((prev) => [...prev, assistantMessage])
-      setIsLoading(false)
 
-      // Extract SQL query if present and send it to the parent component
       const sqlMatch = response.match(/```sql\n([\s\S]*?)\n```/)
       if (sqlMatch && sqlMatch[1]) {
         onQueryGenerated(sqlMatch[1])
       }
-    }, 1000)
+    } catch (error) {
+      const errorMessage: Message = {
+        id: generateId(),
+        content: `An error occurred: ${(error as Error).message}`,
+        role: 'assistant',
+        timestamp: new Date()
+      }
+      setMessages((prev) => [...prev, errorMessage])
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent): void => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSendMessage()
@@ -100,11 +114,14 @@ export const QueryChat = ({ onQueryGenerated }: QueryChatProps) => {
 
   return (
     <div className="flex flex-col h-full border rounded-lg overflow-hidden bg-card">
-      <div className="p-3 border-b bg-muted/50">
-        <h3 className="font-semibold text-sm">AI Query Assistant</h3>
-        <p className="text-xs text-muted-foreground">
-          Describe the data you want to query in natural language
-        </p>
+      <div className="p-3 border-b bg-muted/50 flex justify-between items-center">
+        <div>
+          <h3 className="font-semibold text-sm">AI Query Assistant</h3>
+          <p className="text-xs text-muted-foreground">
+            Describe the data you want to query in natural language
+          </p>
+        </div>
+        <Settings onSave={setSettings} />
       </div>
 
       <ScrollArea className="flex-1 p-4">

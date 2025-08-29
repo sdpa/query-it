@@ -1,10 +1,15 @@
 import tseslint from '@electron-toolkit/eslint-config-ts'
 import eslintConfigPrettier from '@electron-toolkit/eslint-config-prettier'
 import eslintPluginReact from 'eslint-plugin-react'
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
 
-export default tseslint.config(
+export default [
   { ignores: ['**/node_modules', '**/dist', '**/out'] },
-  tseslint.configs.recommended,
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
   eslintPluginReact.configs.flat.recommended,
   eslintPluginReact.configs.flat['jsx-runtime'],
   eslintConfigPrettier,
@@ -16,7 +21,6 @@ export default tseslint.config(
     }
   },
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
@@ -32,4 +36,4 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': 'off'
     }
   }
-)
+]

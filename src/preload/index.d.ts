@@ -7,6 +7,13 @@ declare global {
     api: {
       connectDB: (dbConfig: any, credentials: any) => Promise<{ success: boolean; message: string; error?: string }>,
       disconnectDB: () => Promise<{ success: boolean; message?: string }>,
+      sendLlmMessage: (
+        provider: 'openai' | 'ollama' | 'openrouter',
+        prompt: string,
+        chatHistory?: { role: 'user' | 'assistant'; content: string }[],
+        modelName?: string,
+        apiKey?: string
+      ) => Promise<{ success: boolean; response?: string; error?: string }>,
       getMetadata: () => Promise<PostgresMetadata>
       sendOllamaMessage: (
         prompt: string,

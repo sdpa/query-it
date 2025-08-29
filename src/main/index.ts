@@ -5,11 +5,11 @@ import icon from '../../resources/icon.png?asset'
 import * as dbHandlerFactory from '../backend/db/dbHandlerFactory'
 import { MetadataServiceFactory } from '../backend/services/metadata/MetadataServiceFactory'
 import { DatabaseType } from 'src/backend/db/types'
+import { sendMessage } from '../backend/services/llm/langchainService'
 // import { updateMetadataFile } from './metadataFileService' // Import the new service function
 
 let currentHandler: any = null
 let currentDbType: DatabaseType | null = null // Default to PostgreSQL
-let currentCredentials: any = null
 
 function createWindow(): void {
   // Create the browser window.
@@ -68,7 +68,6 @@ app.whenReady().then(() => {
     if (result.success) {
       currentHandler = handler
       currentDbType = dbType as DatabaseType
-      currentCredentials = credentials
     }
     return result
   })
@@ -77,7 +76,6 @@ app.whenReady().then(() => {
       await currentHandler.disconnect()
       currentHandler = null
       currentDbType = null
-      currentCredentials = null
       return { success: true }
     } catch (err) {
       return { success: false, message: err instanceof Error ? err.message : 'Unknown error' }
@@ -89,6 +87,16 @@ app.whenReady().then(() => {
     const service = MetadataServiceFactory.create(currentDbType!, currentHandler)
     const metadata = await service.getMetadata()
     return metadata
+  })
+
+  ipcMain.handle('llm-send-message', async (_event, provider, prompt, history, modelName, apiKey) => {
+    try {
+      const response = await sendMessage(provider, prompt, history, modelName, apiKey)
+      return { success: true, response }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'An unknown error occurred'
+      return { success: false, error: message }
+    }
   })
 
   // ipcMain.handle('update-metadata-file', async (_event, metadata) => {

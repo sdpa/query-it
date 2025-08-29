@@ -1,7 +1,7 @@
 // import { Button } from '@renderer/components/ui/button'
 import QueryInterface from './components/QueryInterface'
 import Index from "./components/Index"
-import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 const RequireConnection = ({ children }: { children: React.ReactNode }) => {
   const hasConnection = localStorage.getItem("dbCredentials");
