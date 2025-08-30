@@ -47,9 +47,7 @@ export const Settings = ({ onSave }: SettingsProps) => {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Configure LLM Provider</DialogTitle>
-          <DialogDescription>
-            Select your LLM provider and enter your API key.
-          </DialogDescription>
+          <DialogDescription>Select your LLM provider and enter your API key.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
@@ -93,7 +91,9 @@ export const Settings = ({ onSave }: SettingsProps) => {
                       {model}
                     </SelectItem>
                   ))}
-                {provider === 'openai' && <SelectItem value="gpt-3.5-turbo">gpt-3.5-turbo</SelectItem>}
+                {provider === 'openai' && (
+                  <SelectItem value="gpt-3.5-turbo">gpt-3.5-turbo</SelectItem>
+                )}
                 {provider === 'ollama' && <SelectItem value="llama2">llama2</SelectItem>}
               </SelectContent>
             </Select>
