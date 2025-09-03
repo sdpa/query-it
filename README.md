@@ -1,6 +1,6 @@
 # query-it
 
-An Electron application with React and TypeScript
+Query.it is a modern, cross-platform desktop application designed to simplify database interaction. It provides a powerful and intuitive interface for connecting to multiple databases, exploring schemas, and running queries. The standout feature is an AI-powered assistant that helps you generate complex SQL queries from plain English, making data exploration accessible to everyone.
 
 ## Recommended IDE Setup
 
