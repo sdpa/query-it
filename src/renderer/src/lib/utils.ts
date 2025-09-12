@@ -11,4 +11,4 @@ export const createDatabaseConfigs = <
   T extends { [K in keyof AllDBConfigs]: Record<keyof AllDBConfigs[K], FieldConfig> }
 >(
   config: T
-) => config
+): T => config

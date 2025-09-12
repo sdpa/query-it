@@ -3,7 +3,7 @@ import QueryInterface from './components/QueryInterface'
 import Index from './components/Index'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
-const RequireConnection = ({ children }: { children: React.ReactNode }) => {
+const RequireConnection = ({ children }: { children: React.ReactNode }): React.JSX.Element => {
   const hasConnection = localStorage.getItem('dbCredentials')
   if (!hasConnection) {
     return <Navigate to="/" replace />
