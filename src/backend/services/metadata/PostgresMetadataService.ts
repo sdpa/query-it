@@ -214,9 +214,9 @@ export class PostgresMetadataService extends BaseMetadataService<PostgresMetadat
       }))
     }
 
-    console.log('raw metadata: ', res)
+    // console.log('raw metadata: ', res)
     const formatted = await this.processMetadata(res, false)
-    console.log('formatted metadata: ', formatted)
+    // console.log('formatted metadata: ', formatted)
     return res
   }
 }
