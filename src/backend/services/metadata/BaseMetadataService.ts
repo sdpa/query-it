@@ -15,6 +15,7 @@ export abstract class BaseMetadataService<TMetadata> implements IMetadataService
     const filePath = this.getMetadataFilePath()
     try {
       const data = await fs.readFile(filePath, 'utf-8')
+      console.log('data from file: ', data)
       return JSON.parse(data) as TMetadata
     } catch {
       return null

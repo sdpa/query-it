@@ -2,10 +2,17 @@ import { resolve } from 'path'
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import dotenv from 'dotenv'
+
+// Load environment variables
+dotenv.config()
 
 export default defineConfig({
   main: {
     plugins: [externalizeDepsPlugin()]
+    // define: {
+    //   'process.env': JSON.stringify(process.env)
+    // }
   },
   preload: {
     plugins: [externalizeDepsPlugin()]
@@ -17,5 +24,8 @@ export default defineConfig({
       }
     },
     plugins: [react(), tailwindcss()]
+    // define: {
+    //   'process.env': JSON.stringify(process.env)
+    // }
   }
 })

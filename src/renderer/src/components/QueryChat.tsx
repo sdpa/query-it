@@ -3,9 +3,8 @@ import { Send, User, Bot } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
 import { Button } from '@renderer/components/ui/button'
 import { Textarea } from '@renderer/components/ui/textarea'
-import { ScrollArea } from '@renderer/components/ui/scroll-area'
-import { Settings } from './Settings'
-import { LlmProvider } from 'src/backend/services/llm/langchainService'
+// import { ScrollArea, ScrollBar } from '@renderer/components/ui/scroll-area'
+// import { LlmProvider } from 'src/backend/services/llm/langchainService'
 
 interface Message {
   id: string
@@ -29,15 +28,15 @@ export const QueryChat: React.FC<QueryChatProps> = ({ onQueryGenerated }: QueryC
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [settings, setSettings] = useState<{
-    provider: LlmProvider
-    apiKey: string
-    model: string
-  }>({
-    provider: 'openrouter',
-    apiKey: '',
-    model: 'google/gemma-7b-it'
-  })
+  // const [settings, setSettings] = useState<{
+  //   provider: LlmProvider
+  //   apiKey: string
+  //   model: string
+  // }>({
+  //   provider: 'openrouter',
+  //   apiKey: '',
+  //   model: 'google/gemma-7b-it'
+  // })
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Generate a simple unique ID
@@ -65,11 +64,11 @@ export const QueryChat: React.FC<QueryChatProps> = ({ onQueryGenerated }: QueryC
     try {
       const chatHistory = messages.map((m) => ({ role: m.role, content: m.content }))
       const result = await window.api.sendLlmMessage(
-        settings.provider,
+        'ollama',
         input,
         chatHistory,
-        settings.model,
-        settings.apiKey
+        '',
+        ''
       )
 
       let response = ''
@@ -112,6 +111,8 @@ export const QueryChat: React.FC<QueryChatProps> = ({ onQueryGenerated }: QueryC
     }
   }
 
+  // console.log('Messages: ', messages)
+
   return (
     <div className="flex flex-col h-full border rounded-lg overflow-hidden bg-card">
       <div className="p-3 border-b bg-muted/50 flex justify-between items-center">
@@ -121,17 +122,17 @@ export const QueryChat: React.FC<QueryChatProps> = ({ onQueryGenerated }: QueryC
             Describe the data you want to query in natural language
           </p>
         </div>
-        <Settings onSave={setSettings} />
+        {/* <Settings onSave={setSettings} /> */}
       </div>
 
-      <ScrollArea className="flex-1 p-4">
+      <div className="flex-1 p-4 overflow-y-auto chat-scrollbar">
         <div className="space-y-4">
           {messages.map((message) => (
             <div
               key={message.id}
               className={cn(
                 'flex items-start gap-3 text-sm',
-                message.role === 'user' ? 'justify-end' : 'justify-start'
+                message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
               )}
             >
               {message.role === 'assistant' && (
@@ -139,31 +140,31 @@ export const QueryChat: React.FC<QueryChatProps> = ({ onQueryGenerated }: QueryC
                   <Bot className="h-4 w-4" />
                 </div>
               )}
-              <div
-                className={cn(
-                  'rounded-lg px-3 py-2 max-w-[80%]',
-                  message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
-                )}
-              >
-                <div className="whitespace-pre-wrap">
-                  {message.content.split('```').map((part, i) => {
-                    // If this is an SQL code block
-                    if (i % 2 === 1 && part.startsWith('sql\n')) {
-                      const code = part.replace('sql\n', '')
-                      return (
-                        <div
-                          key={i}
-                          className="bg-black/10 p-2 rounded my-2 font-mono text-xs overflow-x-auto"
-                        >
-                          {code}
-                        </div>
-                      )
-                    }
-                    // Regular text
-                    return <span key={i}>{part}</span>
-                  })}
+                <div
+                  className={cn(
+                    'rounded-lg px-3 py-2 max-w-[80%] text-left',
+                    message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                  )}
+                >
+                  <div className="whitespace-pre-wrap text-left">
+                    {message.content.split('```').map((part, i) => {
+                      // If this is an SQL code block
+                      if (i % 2 === 1 && part.startsWith('sql\n')) {
+                        const code = part.replace('sql\n', '')
+                        return (
+                          <div
+                            key={i}
+                            className="bg-black/10 p-2 rounded font-mono text-xs text-left"
+                          >
+                            {code}
+                          </div>
+                        )
+                      }
+                      // Regular text
+                      return <span key={i} className="text-left">{part}</span>
+                    })}
+                  </div>
                 </div>
-              </div>
               {message.role === 'user' && (
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground">
                   <User className="h-4 w-4" />
@@ -173,7 +174,7 @@ export const QueryChat: React.FC<QueryChatProps> = ({ onQueryGenerated }: QueryC
           ))}
           <div ref={messagesEndRef} />
         </div>
-      </ScrollArea>
+      </div>
 
       <div className="p-3 border-t">
         <div className="flex gap-2">

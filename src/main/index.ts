@@ -6,10 +6,20 @@ import * as dbHandlerFactory from '../backend/db/dbHandlerFactory'
 import { MetadataServiceFactory } from '../backend/services/metadata/MetadataServiceFactory'
 import { DatabaseType } from 'src/backend/db/types'
 import { sendMessage } from '../backend/services/llm/langchainService'
+import dotenv from "dotenv";
 // import { updateMetadataFile } from './metadataFileService' // Import the new service function
 
 let currentHandler: any = null
 let currentDbType: DatabaseType | null = null // Default to PostgreSQL
+
+// Load environment variables
+dotenv.config();
+
+// Debug: Log environment variables (remove in production)
+console.log('Environment variables loaded:');
+console.log('OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? 'Set' : 'Not set');
+console.log('OLLAMA_URL:', process.env.OLLAMA_URL);
+console.log('OPENROUTER_API_KEY:', process.env.OPENROUTER_API_KEY ? 'Set' : 'Not set');
 
 function createWindow(): void {
   // Create the browser window.
@@ -93,7 +103,19 @@ app.whenReady().then(() => {
     'llm-send-message',
     async (_event, provider, prompt, history, modelName, apiKey) => {
       try {
-        const response = await sendMessage(provider, prompt, history, modelName, apiKey)
+        // Get metadata from file system if available
+        let metadata = null
+        if (currentDbType) {
+          try {
+            const service = MetadataServiceFactory.create(currentDbType, currentHandler)
+            // Cast to BaseMetadataService to access readMetadataFromFile method
+            metadata = await (service as any).readMetadataFromFile()
+          } catch (error) {
+            console.warn('Failed to read metadata from file for LLM context:', error)
+          }
+        }
+        
+        const response = await sendMessage(provider, prompt, history, modelName, apiKey, metadata)
         return { success: true, response }
       } catch (error) {
         const message = error instanceof Error ? error.message : 'An unknown error occurred'
